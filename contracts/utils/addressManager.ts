@@ -38,13 +38,14 @@ const writeDeployData = async (chainId: number, addresses: string) => {
     ...(prevAddresses || {}),
     ...(JSON.parse(addresses) || {}),
   };
+  
   return new Promise((resolve, reject) => {
     fs.writeFile(
       path.join(
         __dirname,
         `../deployments/${networkName(chainId)}/address.json`
       ),
-      newAddresses,
+      JSON.stringify(newAddresses),
       (err) => {
         if (err) {
           reject(err);
