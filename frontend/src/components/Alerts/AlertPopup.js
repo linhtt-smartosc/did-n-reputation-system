@@ -12,7 +12,7 @@ const AlertPopup = () => {
         }, 5000);
     }, [message]);
 
-    if (message && type) {   
+    if (message && type) { 
         return (
             <div role="alert" className={`alert alert-${type} transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'} md:w-1/3 w-5/6 absolute bottom-0 right-0 m-3 z-10`}>
                 {type === 'info' ? (

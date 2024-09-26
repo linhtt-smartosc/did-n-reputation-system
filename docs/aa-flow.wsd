@@ -1,0 +1,29 @@
+@startuml did-flow
+skinparam backgroundColor transparent
+skinparam defalutFontSize 12
+skinparam defaultFontName Segoe UI Semibold
+skinparam defaultAlign centre
+<style>
+  sequenceDiagram {
+    reference {
+      BackGroundColor #ffffff
+    }
+}
+</style>
+skinparam sequence {
+    ArrowColor #000066
+    ActorBorderColor #000066
+
+
+    ParticipantBorderColor #000066
+    ParticipantBackgroundColor #F0F9FF
+    ParticipantColor #ffffff
+
+    ActorBackgroundColor #ffffff
+}
+skinparam ResponseMessageBelowArrow true
+!pragma teoz true
+
+actor "User" as user
+
+autonumber

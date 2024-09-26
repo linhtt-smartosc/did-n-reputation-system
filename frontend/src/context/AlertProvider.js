@@ -16,7 +16,6 @@ const AlertProvider = ({ children }) => {
     const [type, setType] = useState(initialState.type);
 
     const setAlert = (message, type) => {
-        
         setMessage(message);
         setType(type);
 

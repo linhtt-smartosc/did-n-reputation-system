@@ -1,17 +1,18 @@
 import * as React from 'react';
 import Web3 from 'web3';
+import { useSelector, useDispatch } from 'react-redux';
 import shortenAccount from '../../utils/shortenAccount';
 import useAlert from '../../hooks/useAlert';
-
+import { setUser, unsetUser } from '../../redux/slices/users.slice';
+import Logo from '../../assets/Logo';
 
 const NavBar = () => {
-
-    const [account, setAccount] = React.useState('');
+    const user = useSelector((state) => state.user);
+    const dispatch = useDispatch();
     const { setAlert } = useAlert();
 
     const connectToMetaMask = async () => {
-        console.log("Connecting to MetaMask");
-        
+
         if (window.ethereum) {
             await window.ethereum.enable();
             window.web3 = new Web3(window.ethereum);
@@ -27,12 +28,12 @@ const NavBar = () => {
     const getAccount = async () => {
         setAlert("Connected to MetaMask", "success");
         const accounts = await window.web3.eth.getAccounts();
-        setAccount(shortenAccount(accounts[0]));
+        dispatch(setUser({ account: accounts[0] }));
     }
 
     return (
-        <div className="navbar bg-primary text-base-100">
-            <div className="flex-none">
+        <div className="navbar sticky bg-primary text-base-100">
+            {user.account ? <></> : <div className="flex-none">
                 <div className="drawer lg:hidden">
                     <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                     <div className="drawer-content">
@@ -54,18 +55,28 @@ const NavBar = () => {
                     <div className="drawer-side">
                         <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
                         <ul className="menu bg-base-100 text-base-content min-h-full w-80 p-4">
-                            <li><a>Sidebar Item 1</a></li>
-                            <li><a>Sidebar Item 2</a></li>
+                            <li><a href='/dashboard'>Dashboard</a></li>
+                            <li><a href='/credential'>Verifiable Credential</a></li>
+                            <li><a href='/issue-credential'>Issue</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
+            }
             <div className="flex-1">
+                <Logo fill="#fff" width="50px" height="50px" />
                 <a href='/' className="btn btn-ghost text-xl">DIDify</a>
             </div>
 
+            {user.account ? <div className="flex-0">
+                <a href='/dashboard' className="btn btn-ghost">Dashboard</a>
+                <a href='/credential' className="btn btn-ghost">Verifiable Credential</a>
+                <a href='/issue-credential' className="btn btn-ghost">Issue</a>
+            </div> : <></>}
+
+
             <div className="flex-none">
-                {account ? <button className="btn btn-on-primary rounded-full font-bold">{account}</button> : <button onClick={connectToMetaMask} className="btn btn-on-primary rounded-full font-bold">Connect</button>}
+                {user.account ? <button className="btn btn-on-primary rounded-full font-bold">{shortenAccount(user.account)}</button> : <button onClick={connectToMetaMask} className="btn btn-on-primary rounded-full font-bold">Connect</button>}
             </div>
 
 

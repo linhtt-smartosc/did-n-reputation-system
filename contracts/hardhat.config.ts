@@ -23,10 +23,10 @@ const config: HardhatUserConfig = {
       chainId: 31337,
       accounts: [process.env.LOCAL_PRIVATE_KEY!],
     },
-    sepolia: {
-      url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY!}`,
-      accounts: [process.env.SEPOLIA_PRIVATE_KEY!],
-    },
+    // sepolia: {
+    //   url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY!}`,
+    //   accounts: [process.env.SEPOLIA_PRIVATE_KEY!],
+    // },
   },
   sourcify: {
     enabled: true,
