@@ -8,9 +8,9 @@ interface IVerifier {
         address issuer;
         address subject;
         bytes32 data;
-        uint256 validFrom;
-        uint256 validTo;
-    } 
+        uint validFrom;
+        uint validTo;
+    }
 
     struct Signature {
         uint8 v;
@@ -21,11 +21,14 @@ interface IVerifier {
     /**
      * Check if a credential is valid
      * @param vc Verifiable credential data structure
-     * @param _signaturePart Signature parts including v, r, s
+     * @param _signature signature in bytes
      * @return bool True if the credential exists
      * @return bool True if the credential is valid
      * @return bool True if the param credential issuer is equal to the signer of the credential
      */
-    function verifyCredential(VerifiableCredential memory vc, Signature memory _signaturePart) external returns (bool, bool, bool);
-
+    function verifyCredential(
+        VerifiableCredential memory vc,
+        bytes memory _signature,
+        uint _nonce
+    ) external returns (bool, bool, bool);
 }

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.23;
 
 interface IReputation {
-
     enum SocialAccountPoint {
         GOOGLE_ACCOUNT_REGISTERED,
         FACEBOOK_ACCOUNT_REGISTERED,
@@ -16,26 +15,31 @@ interface IReputation {
     }
 
     struct ReputationPoint {
-        uint256 totalReputationPoint;
+        uint totalReputationPoint;
         mapping(SocialAccountPoint => bool) socialAccountPointStatus;
-        uint256 socialAccountPoint;
-        uint256 transactionHistoryPoint;
-        uint256 verifiableCredentialPoint;
-        mapping (address => bytes32) verifiableCredentials;
+        uint socialAccountPoint;
+        uint transactionHistoryPoint;
+        uint verifiableCredentialPoint;
+        mapping(address => bytes32) verifiableCredentials;
     }
 
-    event ReputationPointUpdated(address indexed owner, uint256 currentReputationPoint);
+    event ReputationPointUpdated(
+        address indexed owner,
+        uint currentReputationPoint
+    );
 
     error VCAlreadyAdded();
 
     error SocialAccountAdded();
 
-    function getReputationByOwner(address _owner) external view returns (uint256);
+    function getReputationByOwner(address _owner) external view returns (uint);
 
-    function addSocialReputationPoint(address _owner, SocialAccountPoint _socialPointType) external;
+    function addSocialReputationPoint(
+        address _owner,
+        SocialAccountPoint _socialPointType
+    ) external;
 
     function addVCPoint(address _owner, bytes32 vcHash) external;
 
     function addHistoricalTxPoint(address _owner) external;
-
 }

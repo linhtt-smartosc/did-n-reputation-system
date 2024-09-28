@@ -12,6 +12,7 @@ const config: HardhatUserConfig = {
             enabled: true,
             runs: 1000,
           },
+          viaIR: true,
         },
       },
     ],
@@ -21,7 +22,14 @@ const config: HardhatUserConfig = {
     local: {
       url: process.env.LOCAL_NETWORK_RPC,
       chainId: 31337,
-      accounts: [process.env.LOCAL_PRIVATE_KEY!],
+      accounts: {
+        mnemonic:
+          process.env.MNEMONIC ||
+          "test test test test test test test test test test test junk",
+        initialIndex: 0,
+        count: 10,
+        accountsBalance: "1000000000000000000000000",
+      },
     },
     // sepolia: {
     //   url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY!}`,

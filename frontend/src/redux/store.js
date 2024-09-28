@@ -1,8 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './slices/users.slice';
+import createSagaMiddleware from 'redux-saga';
+import rootReducer from './rootReducer';
+
+const sagaMiddleware = createSagaMiddleware(); 
 
 export default configureStore({
-    reducer: {
-        user: userReducer,
-    },
+    reducer: rootReducer,
+    middleware: [sagaMiddleware],
 })
