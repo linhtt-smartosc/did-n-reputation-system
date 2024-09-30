@@ -2,7 +2,7 @@ const { time } = require('@nomicfoundation/hardhat-network-helpers');
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 const moment = require('moment');
-const { AbiCoder, keccak256, toUtf8Bytes, SigningKey, getBytes, solidityPacked, id } = require('ethers');
+const { AbiCoder, keccak256, toUtf8Bytes, SigningKey, getBytes, solidityPacked } = require('ethers');
 const testData = require('./testData.json');
 
 const abiCoder = new AbiCoder();

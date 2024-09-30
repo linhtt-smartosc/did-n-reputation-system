@@ -20,7 +20,7 @@ interface IReputation {
         uint socialAccountPoint;
         uint transactionHistoryPoint;
         uint verifiableCredentialPoint;
-        mapping(address => bytes32) verifiableCredentials;
+        mapping(bytes32 => bool) verifiableCredentials;
     }
 
     event ReputationPointUpdated(
@@ -32,14 +32,32 @@ interface IReputation {
 
     error SocialAccountAdded();
 
+    /**
+     * Get the total reputation point by owner
+     * @param _owner address of the owner
+     */
     function getReputationByOwner(address _owner) external view returns (uint);
 
+    /**
+     * Add social reputation point to the owner
+     * @param _owner address of the owner
+     * @param _socialPointType social point type ranging from 0 to 3
+     */
     function addSocialReputationPoint(
         address _owner,
         SocialAccountPoint _socialPointType
     ) external;
 
+    /**
+     * Add verifiable credential point to the owner
+     * @param _owner sddress of the owner
+     * @param vcHash the hash of the verifiable credential
+     */
     function addVCPoint(address _owner, bytes32 vcHash) external;
 
+    /**
+     * Add historical transaction point to the owner
+     * @param _owner address of the owner
+     */
     function addHistoricalTxPoint(address _owner) external;
 }

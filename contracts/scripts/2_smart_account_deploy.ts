@@ -1,10 +1,10 @@
 import { writeDeployData } from "../utils/addressManager";
 import { ethers } from "hardhat";
-import smartAccountArtifact from "@account-abstraction/contracts/artifacts/SimpleAccountFactory.json";
+import smartAccountFactoryArtifact from "@account-abstraction/contracts/artifacts/SimpleAccountFactory.json";
 
 const privateKey = process.env.LOCAL_PRIVATE_KEY;
 
-async function smartAccountDeploy() {
+async function smartAccountFactoryDeploy() {
   const chainID = Number((await ethers.provider.getNetwork()).chainId);
 
   if (!privateKey) {
@@ -12,8 +12,8 @@ async function smartAccountDeploy() {
   }
   const signer = new ethers.Wallet(privateKey, ethers.provider);
   const SmartAccountFactory = new ethers.ContractFactory(
-    smartAccountArtifact.abi,
-    smartAccountArtifact.bytecode,
+    smartAccountFactoryArtifact.abi,
+    smartAccountFactoryArtifact.bytecode,
     signer
   );
   const smartAccount = await SmartAccountFactory.deploy();
@@ -26,4 +26,4 @@ async function smartAccountDeploy() {
   );
 }
 
-smartAccountDeploy()
+smartAccountFactoryDeploy()

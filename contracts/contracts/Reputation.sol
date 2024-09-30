@@ -33,10 +33,10 @@ contract Reputation is IReputation {
     function addVCPoint(address _owner, bytes32 vcHash) external override {
         uint currentReputationPoint;
 
-        if (reputation[_owner].verifiableCredentials[msg.sender].length > 0) {
+        if (reputation[_owner].verifiableCredentials[vcHash]) {
             revert VCAlreadyAdded();
         }
-        reputation[_owner].verifiableCredentials[msg.sender] = vcHash;
+        reputation[_owner].verifiableCredentials[vcHash] = true;
         reputation[_owner].verifiableCredentialPoint += 20;
         currentReputationPoint = reputation[_owner].totalReputationPoint + 20;
 
