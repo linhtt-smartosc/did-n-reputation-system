@@ -18,7 +18,7 @@ const getAddress = async (chainId: number) => {
     fs.readFile(
       path.join(
         __dirname,
-        `../deployments/${networkName(chainId)}/address.json`
+        `../scripts/deployments/${networkName(chainId)}/address.json`
       ),
       "utf8",
       (err, data) => {
@@ -43,7 +43,7 @@ const writeDeployData = async (chainId: number, addresses: string) => {
     fs.writeFile(
       path.join(
         __dirname,
-        `../deployments/${networkName(chainId)}/address.json`
+        `../scripts/deployments/${networkName(chainId)}/address.json`
       ),
       JSON.stringify(newAddresses),
       (err) => {

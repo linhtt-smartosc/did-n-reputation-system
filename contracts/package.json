@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy-local": "npx hardhat run scripts/entry-point-deploy.ts --network local"
+    "test": "npx hardhat test",
+    "deploy-local": "npx hardhat run scripts/1_entry-point-deploy.ts --network local && npx hardhat run scripts/2_smart_account_deploy.ts --network local && npx hardhat run scripts/3_did_contract_deploy.ts --network local && npx hardhat run scripts/4_vc_contract_deploy.ts --network local && npx hardhat run scripts/5_reputation_deploy.ts --network local"
   },
   "keywords": [],
   "author": "",

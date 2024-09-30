@@ -1,6 +1,7 @@
 import { writeDeployData } from "../utils/addressManager";
 import { ethers } from "hardhat";
 import smartAccountFactoryArtifact from "@account-abstraction/contracts/artifacts/SimpleAccountFactory.json";
+import deploymentData from "./deployments/hardhat/address.json"
 
 const privateKey = process.env.LOCAL_PRIVATE_KEY;
 
@@ -16,7 +17,7 @@ async function smartAccountFactoryDeploy() {
     smartAccountFactoryArtifact.bytecode,
     signer
   );
-  const smartAccount = await SmartAccountFactory.deploy();
+  const smartAccount = await SmartAccountFactory.deploy(deploymentData.EntryPoint);
   await smartAccount.waitForDeployment();
   console.log(`SmartAccount deployed to: ${await smartAccount.getAddress()}`);
 
