@@ -3,16 +3,16 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/IVerifier.sol";
-import "./CredentialRegistry.sol";
+import "./interfaces/ICredentialRegistry.sol";
 
 contract Verifier is AccessControl, IVerifier {
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
 
-    CredentialRegistry public credentialRegistry;
+    ICredentialRegistry public credentialRegistry;
 
     constructor(address _credentialRegistryAddress) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        credentialRegistry = CredentialRegistry(_credentialRegistryAddress);
+        credentialRegistry = ICredentialRegistry(_credentialRegistryAddress);
     }
 
     function verifyCredential(

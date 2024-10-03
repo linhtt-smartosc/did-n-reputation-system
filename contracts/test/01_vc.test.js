@@ -1,4 +1,4 @@
-const { time } = require('@nomicfoundation/hardhat-network-helpers');
+const { time, mine } = require('@nomicfoundation/hardhat-network-helpers');
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 const moment = require('moment');
@@ -11,6 +11,8 @@ describe("Verifiable Credential", function () {
     let credentialRegistryInstance;
     let verifierInstance;
     let issuer;
+    let badGuy1;
+    let badGuy;
     let holder;
     let vc;
     let validFrom;
@@ -38,7 +40,7 @@ describe("Verifiable Credential", function () {
 
 
     before(async function () {
-        [issuer, holder] = await ethers.getSigners();
+        [issuer, holder, badGuy1, badGuy] = await ethers.getSigners();
         vc = {
             "@context": "https://www.w3.org/2018/credentials/v1",
             id: "",
@@ -70,16 +72,17 @@ describe("Verifiable Credential", function () {
         console.log("CredentialRegistry deployed to:", await credentialRegistryInstance.getAddress());
         console.log("Verifier deployed to:", await verifierInstance.getAddress());
         await credentialRegistryInstance.grantRole(await credentialRegistryInstance.ISSUER_ROLE(), issuer.address);
-
+        await credentialRegistryInstance.grantRole(await credentialRegistryInstance.ISSUER_ROLE(), badGuy.address);
     })
 
     it("Should grant issuer role correctly", async function () {
         expect(await credentialRegistryInstance.hasRole(await credentialRegistryInstance.ISSUER_ROLE(), issuer.address)).to.be.true;
+        expect(await credentialRegistryInstance.hasRole(await credentialRegistryInstance.ISSUER_ROLE(), badGuy.address)).to.be.true;
     })
     describe("Issue Credential", async function () {
         let nonceToRevoke;
         let nonceToFailRevoke;
-        it("Should be able to register a new credential", async function () {
+        it("Should register a new credential", async function () {
             const nonce = await credentialRegistryInstance.nonces(issuer.address) || 0;
             nonceToRevoke = nonce;
             const credentialHash = await getCredentialHash(vc, issuer.address);
@@ -108,6 +111,20 @@ describe("Verifiable Credential", function () {
             expect(result[3]).to.equal(validTo);
             expect(result[4]).to.equal(true);
             expect(tx).to.emit(credentialRegistryInstance, "CredentialRegistered").withArgs(credentialMessage, issuer.address, holder.address, validFrom, signatureBytes);
+        })
+        it("Should not register a credential if not issuer", async function () {
+            const nonce = await credentialRegistryInstance.nonces(badGuy1.address) || 0;
+            const credentialHash = await getCredentialHash(vc, badGuy1.address);
+            const credentialMessage = await getEthSignedMessageHash(credentialHash, nonce);
+            const sig = await signMessage(credentialMessage, testData.badGuy1);
+            await expect(credentialRegistryInstance.registerCredential(
+                issuer.address,
+                holder.address,
+                credentialMessage,
+                Math.round(moment(vc.issuanceDate).valueOf() / 1000),
+                Math.round(moment(vc.expirationDate).valueOf() / 1000),
+                [sig.v, sig.r, sig.s]
+            )).to.be.revertedWithCustomError(credentialRegistryInstance, "NotIssuer");
         })
         it("Should not register a credential with invalid signature", async function () {
             const nonce = await credentialRegistryInstance.nonces(issuer.address) || 0;
@@ -145,7 +162,8 @@ describe("Verifiable Credential", function () {
                 '0xaa3ea2ac': 'CredentialExists',
                 '0xcaa03ea5': 'InvalidCredential'
             */
-            const nonce = await credentialRegistryInstance.nonces(issuer.address) || 0; 
+            await mine(1);
+            const nonce = await credentialRegistryInstance.nonces(issuer.address) || 0;
             const credentialHash = await getCredentialHash(vc, issuer.address);
             const credentialMessage = await getEthSignedMessageHash(credentialHash, nonceToRevoke);
             const msgHash = keccak256(abiCoder.encode(['address', 'bytes32'], [issuer.address, credentialMessage]));
@@ -157,6 +175,7 @@ describe("Verifiable Credential", function () {
             expect(tx).to.emit(credentialRegistryInstance, "CredentialRevoked").withArgs(credentialHash, issuer.address, time.latest);
         })
         it("Should not be able to revoke a credential if not issuer", async function () {
+            console.log("Addresses", issuer.address, badGuy.address);
             const credentialHash = await getCredentialHash(vc, issuer.address);
             const credentialMessage = await getEthSignedMessageHash(credentialHash, nonceToFailRevoke);
             const sig = await signMessage(credentialMessage, testData.badGuy);

@@ -5,8 +5,6 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/ICredentialRegistry.sol";
 
-import "hardhat/console.sol";
-
 contract CredentialRegistry is ICredentialRegistry, AccessControl {
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
 
@@ -47,7 +45,15 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
         CredentialMetadata storage credential = credentials[_credentialHash][
             _issuer
         ];
-        if (!checkSignature(_signaturePart, _credentialHash, _issuer)) {
+        (bool isValid, address signer) = checkSignature(
+            _signaturePart,
+            _credentialHash,
+            _issuer
+        );
+        if (!hasRole(ISSUER_ROLE, signer)) {
+            revert NotIssuer();
+        }
+        if (!isValid) {
             revert InvalidSignature();
         }
         if (
@@ -91,10 +97,9 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
         }
         require(exist(_credentialHash, _issuer), "Credential doesn't exist");
 
-        bytes32 credentialHash = keccak256(abi.encode(
-            _issuer,
-            _credentialHash
-        ));
+        bytes32 credentialHash = keccak256(
+            abi.encode(_issuer, _credentialHash)
+        );
         bytes32 hash = keccak256(
             abi.encodePacked(
                 bytes1(0x19),
@@ -103,7 +108,12 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
                 nonces[_issuer]
             )
         );
-        if (!checkSignature(_signaturePart, hash, _issuer)) {
+        (bool isValid, ) = checkSignature(
+            _signaturePart,
+            hash,
+            _issuer
+        );
+        if (!isValid) {
             revert InvalidSignature();
         }
 
@@ -173,19 +183,17 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
         Signature memory _signaturePart,
         bytes32 hash,
         address _issuer
-    ) internal returns (bool) {
+    ) internal returns (bool, address) {
         address signer = ecrecover(
             hash,
             _signaturePart.v,
             _signaturePart.r,
             _signaturePart.s
         );
-        nonces[signer]++;
-        return (signer == _issuer);
-    }
-
-    modifier onlyIssuer(address signer) {
-        require(hasRole(ISSUER_ROLE, signer), "Caller is not a issuer");
-        _;
+        bool isValid = signer == _issuer;
+        if(isValid) {
+            nonces[signer]++;
+        }
+        return (isValid, signer);
     }
 }

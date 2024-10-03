@@ -75,6 +75,48 @@ interface ICredentialRegistry {
         address _issuer
     ) external view returns (bool);
 
+    /**
+     * Hash a verifiable credential
+     * @param _issuer address of the issuer
+     * @param _subject address of the subject
+     * @param _credentialSubjectHex hex string of the credential subject
+     * @param _validFrom the emission timestamp (in seconds)
+     * @param _validTo the expiration timestamp (in seconds)
+     */
+    function hashVerifiableCredential(
+        address _issuer,
+        address _subject,
+        bytes32 _credentialSubjectHex,
+        uint _validFrom,
+        uint _validTo
+    ) external pure returns (bytes32); 
+
+    /**
+     * Get the signer of a signature
+     * @param digest the digest of the message
+     * @param v v value of the signature
+     * @param r r value of the signature
+     * @param s value of the signature
+     * @return issuer the signer of the signature  
+     */
+    function getIssuer(
+        bytes32 digest,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external pure returns (address issuer);
+
+    /**
+     * Verify if the issuer is the signer of the signature
+     * @param issuer the issuer of the credential
+     * @param signer the signer of the signature
+     * @return true if the issuer is the signer
+     */
+    function verifyIssuer(
+        address issuer,
+        address signer
+    ) external pure returns (bool);
+
     event CredentialRegistered(
         bytes32 indexed credentialHash,
         address by,
@@ -92,4 +134,5 @@ interface ICredentialRegistry {
     error InvalidSignature();
     error CredentialExists();
     error InvalidCredential();
+    error NotIssuer();
 }
