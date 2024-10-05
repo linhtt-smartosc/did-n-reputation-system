@@ -30,6 +30,9 @@ const config: HardhatUserConfig = {
         count: 10,
         accountsBalance: "1000000000000000000000000",
       },
+      httpHeaders: {
+        "Access-Control-Allow-Origin": "*",
+      },
     },
     // sepolia: {
     //   url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY!}`,

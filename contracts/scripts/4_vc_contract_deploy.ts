@@ -26,7 +26,12 @@ async function credentialRegistryDeploy() {
     VerifierContractArtifact.bytecode,
     signer
   );
-  const verifierContract = await VerifierContract.deploy(credentialRegistryAddress);
+  const verifierContract = await VerifierContract.deploy(
+    "EIP712Domain",
+    "1",
+    31337,
+    credentialRegistryAddress
+  );
   await verifierContract.waitForDeployment();
   console.log(
     `VerifierContract deployed to: ${await verifierContract.getAddress()}`

@@ -47,11 +47,13 @@ interface ICredentialRegistry {
      * Revoke a credential
      * @param _credentialHash The credential hash of the credential generated off-chain
      * @param _signature The signature parts including v, r, s
+     * @param _domainSeparator The domain separator of the contract
      * @param _issuer The issuer of the credential
      */
     function revokeCredential(
         bytes32 _credentialHash,
         Signature memory _signature,
+        bytes32 _domainSeparator,
         address _issuer
     ) external;
 
@@ -77,6 +79,7 @@ interface ICredentialRegistry {
 
     /**
      * Hash a verifiable credential
+     * @param _vcTypeHash the type hash of the verifiable credential following EIP-712 
      * @param _issuer address of the issuer
      * @param _subject address of the subject
      * @param _credentialSubjectHex hex string of the credential subject
@@ -84,12 +87,13 @@ interface ICredentialRegistry {
      * @param _validTo the expiration timestamp (in seconds)
      */
     function hashVerifiableCredential(
+        bytes32 _vcTypeHash,
         address _issuer,
         address _subject,
         bytes32 _credentialSubjectHex,
         uint _validFrom,
         uint _validTo
-    ) external pure returns (bytes32); 
+    ) external pure returns (bytes32);
 
     /**
      * Get the signer of a signature

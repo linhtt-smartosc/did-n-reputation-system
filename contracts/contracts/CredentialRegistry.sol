@@ -87,6 +87,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
     function revokeCredential(
         bytes32 _credentialHash,
         Signature memory _signaturePart,
+        bytes32 _domainSeparator,
         address _issuer
     ) external override {
         CredentialMetadata storage credential = credentials[_credentialHash][
@@ -104,6 +105,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
             abi.encodePacked(
                 bytes1(0x19),
                 bytes1(0x00),
+                _domainSeparator,
                 credentialHash,
                 nonces[_issuer]
             )
@@ -145,6 +147,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
     }
 
     function hashVerifiableCredential(
+        bytes32 _vcTypeHash,
         address _issuer,
         address _subject,
         bytes32 _credentialSubjectHex,
@@ -154,6 +157,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
         return
             keccak256(
                 abi.encode(
+                    _vcTypeHash,
                     _issuer,
                     _subject,
                     _credentialSubjectHex,
