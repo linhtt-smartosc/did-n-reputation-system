@@ -1,9 +1,9 @@
-const { encodeBytes32String, toUtf8String } = require('ethers');
+const { encodeBytes32String, toUtf8String, Wallet } = require('ethers');
 const { signer } = require('../config/contract-instances.config');
-const { reputationContract } = require('../config/contract-instances.config');
+const { reputationContract, vcRegistryContract } = require('../config/contract-instances.config');
 const DIDDao = require('../dao/did.dao');
 
-const createDID = async (address, email, encryptedKey, role, signInType) => {
+const createDID = async (address, email, encryptedKey, role, signInType, name) => {
     const chainId = Number((await signer.provider.getNetwork()).chainId);
     const did = `did:didify:${chainId}:${address}`;
     let tx;
@@ -14,7 +14,12 @@ const createDID = async (address, email, encryptedKey, role, signInType) => {
         tx = await reputationContract.addSocialReputationPoint(address, signInType);
     }
     const reputationPoint = Number(await reputationContract.getReputationByOwner(address));
-    
+    if (role === 'issuer') {
+        console.log('Granting issuer role to', address);
+        await vcRegistryContract.grantRole(await vcRegistryContract.ISSUER_ROLE(), address);
+        console.log('Issuer role granted to', address);
+
+    }
     const newUser = await DIDDao.createUser(address, email, role, encryptedKey, reputationPoint);
     const newDID = await DIDDao.createDID(address, chainId);
     return { did, newUser, newDID };

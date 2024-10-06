@@ -1,5 +1,6 @@
 import usePagination from "../../hooks/usePagination";
 
+
 // data structure: {id, credentialId, subjectReference, issuerDID, type, createdDate, expiryDate}
 const Table = ({data, totalItems}) => {
     const {

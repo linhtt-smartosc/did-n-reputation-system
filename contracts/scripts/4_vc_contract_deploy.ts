@@ -27,7 +27,7 @@ async function credentialRegistryDeploy() {
     signer
   );
   const verifierContract = await VerifierContract.deploy(
-    "EIP712Domain",
+    "Didify",
     "1",
     31337,
     credentialRegistryAddress

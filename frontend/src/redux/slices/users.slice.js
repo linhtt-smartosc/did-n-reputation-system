@@ -11,6 +11,7 @@ const userSlice = createSlice({
         setUser: (state, action) => {
             state.account = action.payload.account;
             state.isLoggedIn = true;
+            localStorage.setItem('user', JSON.stringify({ account: action.payload.account }));
         },
         unsetUser: (state) => {
             state.account = null;

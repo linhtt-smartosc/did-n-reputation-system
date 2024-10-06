@@ -116,8 +116,14 @@ describe("Verifiable Credential", function () {
                 type: "EcdsaSecp256k1Signature2019",
                 proofPurpose: "assertionMethod",
                 verificationMethod: await verifierInstance.getAddress(),
-                proofValue: {}
+                proofValue: {
+                    v: sig.v,
+                    r: sig.r,
+                    s: sig.s
+                }
             });
+            console.log(vc.proof);
+            
             const signatureBytes = abiCoder.encode(['bytes32', 'bytes32', 'uint8'], [sig.r, sig.s, sig.v]);
             expect(result[0]).to.equal(issuer.address);
             expect(result[1]).to.equal(holder.address);
@@ -215,6 +221,8 @@ describe("Verifiable Credential", function () {
             );
             const receipt = await tx.wait();
             signatureEmitted = receipt.logs[0].args[4];
+            console.log(signatureEmitted);
+            
             nonceToVerify = receipt.logs[0].args[5];
             const credentialSubjectHex = keccak256(toUtf8Bytes(JSON.stringify(vc.credentialSubject)));
             const verifyTx = await verifierInstance.verifyCredential([issuer.address, holder.address, credentialSubjectHex, validFrom, validTo], signatureEmitted, nonceToVerify);

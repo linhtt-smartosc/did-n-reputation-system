@@ -7,7 +7,7 @@ interface IVerifier {
     struct VerifiableCredential {
         address issuer;
         address subject;
-        bytes32 data;
+        bytes32 credentialSubject;
         uint validFrom;
         uint validTo;
     }
@@ -28,7 +28,6 @@ interface IVerifier {
      */
     function verifyCredential(
         VerifiableCredential memory vc,
-        bytes memory _signature,
-        uint _nonce
+        bytes memory _signature
     ) external returns (bool, bool, bool);
 }

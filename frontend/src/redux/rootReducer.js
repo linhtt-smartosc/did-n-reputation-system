@@ -1,7 +1,7 @@
 import usersSlice from "./slices/users.slice";
 
 const rootReducer = {
-    users: usersSlice,
+    user: usersSlice,
 };
 
 export default rootReducer;

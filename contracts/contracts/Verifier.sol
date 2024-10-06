@@ -4,13 +4,12 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/IVerifier.sol";
 import "./interfaces/ICredentialRegistry.sol";
-import "hardhat/console.sol";
 
 contract Verifier is AccessControl, IVerifier {
     struct EIP712Domain {
         string name;
         string version;
-        uint256 chainId;
+        uint chainId;
         address verifyingContract;
     }
 
@@ -20,18 +19,14 @@ contract Verifier is AccessControl, IVerifier {
 
     bytes32 constant EIP712DOMAIN_TYPEHASH =
         keccak256(
-            bytes(
-                "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-            )
+            abi.encodePacked("EIP712Domain(string name,string version,uint chainId,address verifyingContract)")
         );
 
     bytes32 DOMAIN_SEPARATOR;
 
     bytes32 internal constant VERIFIABLE_CREDENTIAL_TYPEHASH =
         keccak256(
-            bytes(
-                "VerifiableCredential(address issuer,address subject,bytes32 credentialSubject,uint256 validFrom,uint256 validTo)"
-            )
+            abi.encodePacked("VerifiableCredential(address issuer,address subject,bytes32 credentialSubject,uint validFrom,uint validTo)")
         );
 
     constructor(
@@ -55,18 +50,6 @@ contract Verifier is AccessControl, IVerifier {
     function hashEIP712Domain(
         EIP712Domain memory eip712Domain
     ) internal pure returns (bytes32) {
-        console.log("EIP712Domain hash");
-        console.logBytes32(
-            keccak256(
-                abi.encode(
-                    EIP712DOMAIN_TYPEHASH,
-                    keccak256(bytes(eip712Domain.name)),
-                    keccak256(bytes(eip712Domain.version)),
-                    eip712Domain.chainId,
-                    eip712Domain.verifyingContract
-                )
-            )
-        );
         return
             keccak256(
                 abi.encode(
@@ -81,25 +64,23 @@ contract Verifier is AccessControl, IVerifier {
 
     function verifyCredential(
         VerifiableCredential memory _vc,
-        bytes memory _signature,
-        uint _nonce
+        bytes memory _signature
     ) external view override returns (bool, bool, bool) {
         bytes32 hash = keccak256(
             abi.encodePacked(
-                bytes1(0x19),
-                bytes1(0x00),
+                "\x19\x01",
                 DOMAIN_SEPARATOR,
                 credentialRegistry.hashVerifiableCredential(
                     VERIFIABLE_CREDENTIAL_TYPEHASH,
                     _vc.issuer,
                     _vc.subject,
-                    _vc.data,
+                    _vc.credentialSubject,
                     _vc.validFrom,
                     _vc.validTo
-                ),
-                _nonce
+                )
             )
         );
+
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
         address signer = credentialRegistry.getIssuer(hash, v, r, s);
         return (

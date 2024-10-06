@@ -16,6 +16,10 @@ const VCSchema = new Schema({
     status: {
         type: Boolean,
         default: true
+    },
+    proof: {
+        type: Object,
+        required: true
     }
 }, {
     versionKey: false,

@@ -50,5 +50,6 @@ module.exports = {
     createDID,
     getUser,
     createUser,
-    updateOwner
+    updateOwner,
+    updateReputation
 }

@@ -27,6 +27,9 @@ const userSchema = new Schema({
     },
     smartAccount: {
         type: String,
+    },
+    name: {
+        type: String,
     }
 }, {
     versionKey: false,

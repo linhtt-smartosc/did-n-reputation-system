@@ -7,7 +7,13 @@ import './index.css';
 import App from './App';
 import { AlertProvider } from './context/AlertProvider';
 import Layout from './components/layouts/Layout';
+import { Buffer } from 'buffer';
 
+window.Buffer = window.Buffer || Buffer;
+
+if (module.hot) {
+  module.hot.accept();
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

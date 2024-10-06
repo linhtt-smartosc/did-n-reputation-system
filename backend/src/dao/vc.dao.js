@@ -1,10 +1,11 @@
 const VC = require('../model/vc.model');
 
-const createVC = async (vcHash, issuer, subject) => {
+const createVC = async (vcHash, issuer, subject, proof) => {
     const newVC = new VC({
         _id: vcHash,
         issuer,
-        subject
+        subject,
+        proof
     });
     return await newVC.save();
 }

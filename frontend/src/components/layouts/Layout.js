@@ -7,8 +7,11 @@ const Layout = ({ children }) => {
     return (
         <div className='flex flex-col h-screen'>
             <NavBar />
-            <AlertPopup />
-            <main className="flex-grow">{children}</main>
+            <main className="flex-grow relative">
+                {children}
+                <AlertPopup />
+            </main>
+
             <Footer />
         </div>
     );

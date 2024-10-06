@@ -1,30 +1,26 @@
 import Home from '../pages/Home';
 import Dashboard from '../pages/Dashboard';
-import NotFound from '../pages/NotFound';
-import CredentialAndDID from '../pages/CredentialAndDID';
+// import NotFound from '../pages/NotFound';
 import IssueCredential from '../pages/IssueCredential';
+import { createBrowserRouter } from 'react-router-dom';
 
-const routes = [
+const routes = createBrowserRouter([
     {
         path: '/',
-        component: Home,
+        element: <Home />,
     },
     {
         path: '/dashboard',
-        component: Dashboard,
-    },
-    {
-        path: '/credential',
-        component: CredentialAndDID,
+        element: <Dashboard />,
     },
     {
         path: '/issue-credential',
-        component: IssueCredential,
+        element: <IssueCredential />,
     },
-    {
-        path: '*',
-        component: NotFound,
-    }
-]
+    // {
+    //     path: '*',
+    //     element: <NotFound />,
+    // }
+]);
 
 export default routes;

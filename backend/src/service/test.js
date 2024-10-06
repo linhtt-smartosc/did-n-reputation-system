@@ -1,5 +1,5 @@
 const {ethers, toUtf8String, toNumber} = require('ethers');
-const signer = require('../config/contract-instances.config');
+const {signer, vcRegistryContract} = require('../config/contract-instances.config');
 
 const wallet = ethers.Wallet.createRandom();
 
@@ -11,8 +11,9 @@ async function main() {
     const chainId = (await signer.provider.getNetwork()).chainId;
     console.log("Chain id", chainId);
     console.log(toUtf8String("0x6d796b6579"));
-    console.log(toNumber());
-    
+    // await vcRegistryContract.connect(signer).grantRole(await vcRegistryContract.ISSUER_ROLE(), "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199");
+    const check = await vcRegistryContract.hasRole(await vcRegistryContract.ISSUER_ROLE(), "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199");
+    console.log("Check", check);
     
 }
 main();

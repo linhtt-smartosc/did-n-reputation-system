@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/v1/did', apis.didRouter);
-app.use('/api/v1/verifier', apis.vcRouter);
+app.use('/api/v1/vc', apis.vcRouter);
 // app.use('/api/v1/aa', apis.AARouter);
 
 connectMongo();
