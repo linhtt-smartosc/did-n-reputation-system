@@ -12,7 +12,7 @@ let didContractInstance;
 const signData = async (identity, signerAddress, privateKeyBytes, dataBytes, didRegistryAddress) => {
   const nonce = await didContractInstance.nonce(signerAddress) || 0;
   const paddedNonce = zeroPadValue(toBeHex(nonce), 32);
-  const dataToSign = concat(['0x1900', didRegistryAddress, paddedNonce, identity, dataBytes]);
+  const dataToSign = concat([Buffer.from('1901', 'hex'), didRegistryAddress, paddedNonce, identity, dataBytes]);
   const hash = keccak256(dataToSign);
   return new SigningKey(privateKeyBytes).sign(hash);
 }
@@ -75,7 +75,7 @@ describe("DID", function () {
         zeroPadValue(toBeHex(86400), 32),
       ])
       const sig = await signData(owner1Address, owner1Address, getBytes(owner1PrivateKey), dataBytes, await didContractInstance.getAddress());
-      
+
       const tx = await didContractInstance.setAttributeSigned(owner1Address, sig.v, sig.r, sig.s, encodeBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400);
       const receipt = await tx.wait();
       expect(owner1Address).to.be.equal(receipt.logs[0].args[0]);

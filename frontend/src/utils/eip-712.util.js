@@ -31,8 +31,6 @@ const constructMsgAndSign = async (vc) => {
         console.error('Verifier Registry Contract is not initialized');
         return;
     }
-    console.log('VC:', vc);
-
     const issuanceDate = new Date(vc.issuanceDate);
     const expirationDate = new Date(vc.expirationDate);
 
@@ -68,16 +66,14 @@ const constructMsgAndSign = async (vc) => {
         params: [from, msgParams],
     });
 
-    try {
-        const verify = await verifierRegistryContract.verifyCredential(
-            [accounts[0], holder, credentialSubjectHex, validFrom, validTo],
-            signature
-        );
-        console.log('Verification:', verify);
-
-    } catch (error) {
-        console.error('Error verifying credential:', error);
-    }
+    // try {
+    //     const verify = await verifierRegistryContract.verifyCredential(
+    //         [accounts[0], holder, credentialSubjectHex, validFrom, validTo],
+    //         signature
+    //     );
+    // } catch (error) {
+    //     console.error('Error verifying credential:', error);
+    // }
 
     return signature;
 }

@@ -4,7 +4,6 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/ICredentialRegistry.sol";
-import "hardhat/console.sol";
 
 contract CredentialRegistry is ICredentialRegistry, AccessControl {
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
@@ -53,7 +52,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
         ) {
             revert CredentialExists();
         }
-        console.log("Registering credential");
+
         credential.issuer = _issuer;
         credential.subject = _subject;
         credential.validFrom = _from;
@@ -122,7 +121,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
             _signaturePart.r,
             _signaturePart.s,
             _signaturePart.v
-        );
+        );  
         credential.signatures[_signature] = true;
 
         emit CredentialRegistered(
@@ -155,8 +154,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
             abi.encodePacked(
                 "\x19\x01",
                 _domainSeparator,
-                credentialHash,
-                nonces[_issuer]
+                credentialHash
             )
         );
         (bool isValid, ) = checkSignature(

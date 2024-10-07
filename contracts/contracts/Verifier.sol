@@ -28,7 +28,7 @@ contract Verifier is AccessControl, IVerifier {
         keccak256(
             abi.encodePacked("VerifiableCredential(address issuer,address subject,bytes32 credentialSubject,uint validFrom,uint validTo)")
         );
-
+    
     constructor(
         string memory name,
         string memory version,
@@ -44,6 +44,7 @@ contract Verifier is AccessControl, IVerifier {
                 verifyingContract: address(this)
             })
         );
+
         credentialRegistry = ICredentialRegistry(credentialRegistryAddress);
     }
 
@@ -65,7 +66,7 @@ contract Verifier is AccessControl, IVerifier {
     function verifyCredential(
         VerifiableCredential memory _vc,
         bytes memory _signature
-    ) external view override returns (bool, bool, bool) {
+    ) external view override returns (bool) {
         bytes32 hash = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -80,14 +81,27 @@ contract Verifier is AccessControl, IVerifier {
                 )
             )
         );
-
+    
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
         address signer = credentialRegistry.getIssuer(hash, v, r, s);
+
         return (
-            credentialRegistry.exist(hash, _vc.issuer),
-            credentialRegistry.validate(hash, _vc.issuer),
             credentialRegistry.verifyIssuer(_vc.issuer, signer)
         );
+    }
+
+    function exist(
+        bytes32 _credentialHash,
+        address _issuer
+    ) external view override returns (bool) {
+        return credentialRegistry.exist(_credentialHash, _issuer);
+    }
+
+    function validate(
+        bytes32 _credentialHash,
+        address _issuer
+    ) external view override returns (bool) {
+        return credentialRegistry.validate(_credentialHash, _issuer);
     }
 
     function splitSignature(

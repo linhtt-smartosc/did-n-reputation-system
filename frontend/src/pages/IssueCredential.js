@@ -127,7 +127,8 @@ const IssueCredential = () => {
             
             const result = await issueVC(data);
             const credentialHash = keccak256(toUtf8Bytes(result._id));
-
+            console.log("Credential Hash:", credentialHash);
+            
             const registerVCTx = await vcRegistryContract.registerCredentialEOA(user.account, holder, credentialHash, validFrom, validTo);
             const receipt = await registerVCTx.wait();
             const getVCTx = await vcRegistryContract.getCredential(credentialHash, user.account);

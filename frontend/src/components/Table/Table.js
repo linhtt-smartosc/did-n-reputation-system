@@ -21,6 +21,7 @@ const Table = ({ data, totalItems }) => {
     const [loading, setLoading] = useState(false);
     const dialogRef = useRef(null);
     const [vc, setVC] = useState({});
+    const [vcId, setVCId] = useState('');
 
     const handleRevoke = async (id, issuer) => {
         const hash = keccak256(toUtf8Bytes(id));
@@ -37,12 +38,13 @@ const Table = ({ data, totalItems }) => {
 
     const handleDetail = async (id) => {
         console.log("Detail", id);
+        setVCId(id);
+        setShowModal(true);
         setLoading(true);
         try {
             const res = await retrieveVC(id);
             console.log("Res", res.data);
             setVC(res.data);
-            setShowModal(true);
             if (dialogRef.current) {
                 dialogRef.current.showModal();
             }
@@ -71,9 +73,12 @@ const Table = ({ data, totalItems }) => {
         const validTo = Math.floor(exp.getTime() / 1000);
         const validFrom = Math.floor(iat.getTime() / 1000);
         const sig = vc.proof.proof;
-        const verify = await verifierRegistryContract.verifyCredential([issuer, holder, credentialSubjectHex, validFrom, validTo], sig);
-        console.log("Verify", verify);
-        if (verify[2] === true) {
+        const isIssuer = await verifierRegistryContract.verifyCredential([issuer, holder, credentialSubjectHex, validFrom, validTo], sig);
+        const isExist = await verifierRegistryContract.exist(keccak256(toUtf8Bytes(vcId)), issuer);
+        const isValid = await verifierRegistryContract.validate(keccak256(toUtf8Bytes(vcId)), issuer);
+
+        console.log("Verify", isIssuer);
+        if (isIssuer === true && isExist === true && isValid === true) {
             closeModal();
             setAlert("Credential verified successfully!", "success");
         } else {
@@ -106,9 +111,9 @@ const Table = ({ data, totalItems }) => {
                 <table className="table">
                     <thead>
                         <tr>
-                            <th>Credential ID</th>
+                            <th>ID</th>
                             <th>Subject</th>
-                            <th>Issuer DID</th>
+                            <th>Issuer</th>
                             <th>Type</th>
                             <th>Created Date</th>
                             <th>Expiry Date</th>
@@ -175,11 +180,13 @@ const Table = ({ data, totalItems }) => {
                             </form>
                             <h3 className="text-lg font-bold">Credential Details</h3>
                             {loading ? (
-                                <p className="py-4">Loading...</p>
+                                <div className="py-4">
+                                    <span class="loading loading-spinner loading-lg"></span>
+                                </div>
                             ) : (
                                 <div className="py-4">
                                     <p>
-                                        <strong>Credential ID:</strong> {vc.id}<br />
+                                        <strong>Credential ID:</strong> {vc._id}<br />
                                         <strong>Subject:</strong> {vc.holder}<br />
                                         <strong>Issuer:</strong> {vc.issuer}<br />
                                         <strong>Type:</strong> {vc.type}<br />
@@ -196,7 +203,7 @@ const Table = ({ data, totalItems }) => {
                                 </div>
                             )}
                             <div className="flex justify-end">
-                                <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
+                                <button className="btn btn-primary" onClick={() => handleVerify(vcId)}>Verify</button>
                             </div>
                         </div>
                     </dialog>

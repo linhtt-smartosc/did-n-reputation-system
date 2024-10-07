@@ -11,7 +11,7 @@ const abi = [
 const iface = new ethers.Interface(abi);
 
 // The return data from the error
-const returnData = "0xcaa03ea5";
+const returnData = "0xaa3ea2ac";
 
 try {
     // Decode the error data
