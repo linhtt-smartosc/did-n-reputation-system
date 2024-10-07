@@ -68,24 +68,18 @@ const constructMsgAndSign = async (vc) => {
         params: [from, msgParams],
     });
 
-    // const r = "0x" + signature.substring(0, 64);
-    // const s = "0x" + signature.substring(64, 128);
-    // const v = parseInt(signature.substring(128, 130), 16);
-    return signature;
-    
-    // try {
-    //     console.log("Values: ", [accounts[0], holder, credentialSubjectHex, validFrom, validTo]);
-    //     console.log("Signature: ", signature);
-        
-    //     const verify = await verifierRegistryContract.verifyCredential(
-    //         [accounts[0], holder, credentialSubjectHex, validFrom, validTo],
-    //         signature
-    //     );
-    //     console.log('Verify:', verify);
+    try {
+        const verify = await verifierRegistryContract.verifyCredential(
+            [accounts[0], holder, credentialSubjectHex, validFrom, validTo],
+            signature
+        );
+        console.log('Verification:', verify);
 
-    // } catch (error) {
-    //     console.error('Error verifying credential:', error);
-    // }
+    } catch (error) {
+        console.error('Error verifying credential:', error);
+    }
+
+    return signature;
 }
 
 

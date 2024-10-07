@@ -41,9 +41,19 @@ const grantRole = async (req, res) => {
 }
 
 const revokeVC = async (req, res) => {
-    const { vcHash } = req.params;
+    const { id } = req.params;
     try {
-        const vc = await VCService.revokeVC(vcHash);
+        const vc = await VCService.revokeVC(id);
+        res.status(200).json(vc);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const retrieveVC = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const vc = await VCService.retrieveVC(id);
         res.status(200).json(vc);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -55,5 +65,6 @@ module.exports = {
     revokeVC,
     getVCByIssuer,
     getVCBySubject,
-    grantRole
+    grantRole,
+    retrieveVC
 }

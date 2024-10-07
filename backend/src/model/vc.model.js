@@ -17,8 +17,20 @@ const VCSchema = new Schema({
         type: Boolean,
         default: true
     },
+    iat: {
+        type: String,
+        required: true
+    },
+    exp: {
+        type: String,
+        required: true
+    },
     proof: {
         type: Object,
+        required: true
+    },
+    type: {
+        type: [],
         required: true
     }
 }, {

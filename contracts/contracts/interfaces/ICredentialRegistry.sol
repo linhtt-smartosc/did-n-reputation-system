@@ -124,11 +124,11 @@ interface ICredentialRegistry {
     event CredentialRegistered(
         bytes32 indexed credentialHash,
         address by,
-        address id,
+        address to,
         uint iat,
-        bytes proof,
         uint nonce
     );
+
     event CredentialRevoked(
         bytes32 indexed credentialHash,
         address by,

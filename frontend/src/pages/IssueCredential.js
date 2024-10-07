@@ -7,6 +7,9 @@ import constructMsgAndSign from "../utils/eip-712.util";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/slices/users.slice";
 import connectWallet from "../utils/connectWallet.util";
+import { vcRegistryContract } from "../config/contract.config";
+import { Interface, keccak256, toUtf8Bytes } from "ethers";
+import vcRegistry from "../artifacts/CredentialRegistry.json"
 
 const IssueCredential = () => {
     const user = useSelector(state => state.user);
@@ -104,7 +107,7 @@ const IssueCredential = () => {
         try {
             const sig = await constructMsgAndSign(vc);
             vc.proof.proofValue = sig;
-            console.log(vc);
+
             const data = {
                 type,
                 issuer: user.account,
@@ -114,16 +117,31 @@ const IssueCredential = () => {
                 iat,
                 exp
             }
-            console.log(data);
+
+            const issuanceDate = new Date(vc.issuanceDate);
+            const expirationDate = new Date(vc.expirationDate);
+
+            // convert to Unix timestamp in seconds
+            const validFrom = Math.floor(issuanceDate.getTime() / 1000);
+            const validTo = Math.floor(expirationDate.getTime() / 1000);
             
             const result = await issueVC(data);
-            console.log(result);
+            const credentialHash = keccak256(toUtf8Bytes(result._id));
+
+            const registerVCTx = await vcRegistryContract.registerCredentialEOA(user.account, holder, credentialHash, validFrom, validTo);
+            const receipt = await registerVCTx.wait();
+            const getVCTx = await vcRegistryContract.getCredential(credentialHash, user.account);
+            console.log("Get VCtx:", getVCTx);
+            console.log(receipt.logs[0].args);
             
             if (result) {
                 setAlert('Credential issued successfully!', 'success');
             }
         } catch (error) {
             console.error(error);
+            const iface = new Interface(vcRegistry.abi);
+            const decodedData = iface.parseTransaction({ data: error.payload.params[0].data });
+            console.log("Decoded Data:", decodedData);
         }
     }
 

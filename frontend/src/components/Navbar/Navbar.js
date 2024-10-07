@@ -47,7 +47,6 @@ const NavBar = () => {
                             <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay -z-10"></label>
                             <ul className="menu bg-base-100 text-base-content min-h-full w-80 p-4">
                                 <li><a href='/dashboard'>Dashboard</a></li>
-                                <li><a href='/credential'>Verifiable Credential</a></li>
                                 <li><a href='/issue-credential'>Issue</a></li>
                             </ul>
                         </div>
@@ -61,7 +60,6 @@ const NavBar = () => {
 
             {user.account ? <div className="hidden md:flex flex-0 ">
                 <a href='/dashboard' className="btn btn-ghost">Dashboard</a>
-                <a href='/credential' className="btn btn-ghost">Verifiable Credential</a>
                 <a href='/issue-credential' className="btn btn-ghost">Issue</a>
             </div> : <></>}
 

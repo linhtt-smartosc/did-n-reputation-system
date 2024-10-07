@@ -1,0 +1,52 @@
+@startuml did-flow
+skinparam backgroundColor white
+skinparam defalutFontSize 12
+skinparam defaultFontName Segoe UI Semibold
+skinparam defaultAlign centre
+<style>
+  sequenceDiagram {
+    reference {
+      BackGroundColor #ffffff
+    }
+}
+</style>
+skinparam sequence {
+    ArrowColor #000066
+    ActorBorderColor #000066
+
+
+    ParticipantBorderColor #000066
+    ParticipantBackgroundColor #F0F9FF
+    ParticipantColor #ffffff
+
+    ActorBackgroundColor #ffffff
+}
+skinparam ResponseMessageBelowArrow true
+!pragma teoz true
+
+actor "Issuer" as issuer
+boundary ":VCServiceForm" as form
+control ":VCService" as system
+entity ":VC" as vc
+entity ":User" as user
+actor "Blockchain" as blockchain
+
+issuer -> form : request create a VC()
+activate issuer
+activate form
+form -> system: create a VC()
+activate system
+form -> blockchain++: register a VC()
+system -> vc: save()
+activate vc
+deactivate vc
+system -> user++: update reputation()
+deactivate user
+system -> blockchain: update reputation()
+deactivate blockchain
+deactivate system
+form --> issuer: success
+deactivate form
+deactivate issuer
+
+autonumber

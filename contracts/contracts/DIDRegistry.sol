@@ -57,8 +57,7 @@ contract DIDRegistry is IDIDRegistry {
     ) public {
         bytes32 hash = keccak256(
             abi.encodePacked(
-                bytes1(0x19),
-                bytes1(0),
+                "\x19\x01",
                 this,
                 nonce[identityOwner(identity)],
                 identity,
@@ -110,8 +109,7 @@ contract DIDRegistry is IDIDRegistry {
     ) public {
         bytes32 hash = keccak256(
             abi.encodePacked(
-                bytes1(0x19),
-                bytes1(0),
+                "\x19\x01",
                 this,
                 nonce[identityOwner(identity)],
                 identity,

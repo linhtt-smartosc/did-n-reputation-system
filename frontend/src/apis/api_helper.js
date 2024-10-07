@@ -40,7 +40,7 @@ export async function put(url, data, config = {}) {
 
 export async function patch(url, data, config = {}) {
     return axiosApi
-        .patch(url, ...data, { ...config })
+        .patch(url, data, { ...config })
         .then(response => response.data)
 }
 

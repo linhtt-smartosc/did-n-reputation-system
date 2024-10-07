@@ -4,6 +4,7 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/ICredentialRegistry.sol";
+import "hardhat/console.sol";
 
 contract CredentialRegistry is ICredentialRegistry, AccessControl {
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
@@ -32,6 +33,56 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
                 credential.validTo,
                 credential.status
             );
+    }
+
+    function registerCredentialEOA(
+        address _issuer,
+        address _subject,
+        bytes32 _credentialHash,
+        uint _from,
+        uint _exp
+    ) external {
+        require(hasRole(ISSUER_ROLE, msg.sender), "Not issuer");
+        require(_issuer == msg.sender, "Not issuer");
+        CredentialMetadata storage credential = credentials[_credentialHash][
+            _issuer
+        ];
+        if (
+            exist(_credentialHash, _issuer) &&
+            validate(_credentialHash, _issuer)
+        ) {
+            revert CredentialExists();
+        }
+        console.log("Registering credential");
+        credential.issuer = _issuer;
+        credential.subject = _subject;
+        credential.validFrom = _from;
+        credential.validTo = _exp;
+        credential.status = true;
+
+        emit CredentialRegistered(
+            _credentialHash,
+            _issuer,
+            _subject,
+            _from,
+            nonces[_issuer]
+        );
+    }
+
+    function revokeCredentialEOA(
+        bytes32 _credentialHash,
+        address _issuer
+    ) external {
+        require(_issuer == msg.sender, "Not issuer");
+        CredentialMetadata storage credential = credentials[_credentialHash][_issuer];
+        if (!validate(_credentialHash, _issuer)) {
+            revert InvalidCredential();
+        }
+        require(exist(_credentialHash, _issuer), "Credential doesn't exist");
+
+        credential.status = false;
+
+        emit CredentialRevoked(_credentialHash, msg.sender, block.timestamp);
     }
 
     function registerCredential(
@@ -79,7 +130,6 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
             _issuer,
             _subject,
             _from,
-            _signature,
             nonces[_issuer] - 1
         );
     }
@@ -103,8 +153,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
         );
         bytes32 hash = keccak256(
             abi.encodePacked(
-                bytes1(0x19),
-                bytes1(0x00),
+                "\x19\x01",
                 _domainSeparator,
                 credentialHash,
                 nonces[_issuer]

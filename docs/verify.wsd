@@ -1,5 +1,5 @@
 @startuml did-flow
-skinparam backgroundColor transparent
+skinparam backgroundColor white
 skinparam defalutFontSize 12
 skinparam defaultFontName Segoe UI Semibold
 skinparam defaultAlign centre
@@ -24,6 +24,25 @@ skinparam sequence {
 skinparam ResponseMessageBelowArrow true
 !pragma teoz true
 
-actor "User" as user
+actor "Holder" as holder
+boundary ":VCServiceForm" as form
+control ":VCService" as system
+entity ":VC" as vc
+actor "IPFS Service" as ipfs
+actor "Blockchain" as blockchain
+
+holder -> form : request verify a VC()
+activate holder
+activate form
+form -> ipfs: get a VC()
+activate ipfs
+deactivate ipfs
+form -> system: verify a VC()
+activate system
+system -> blockchain: verify a VC()
+activate blockchain
+deactivate blockchain
+deactivate system
+form --> holder: success
 
 autonumber

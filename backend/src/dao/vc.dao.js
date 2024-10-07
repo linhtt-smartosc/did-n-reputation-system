@@ -1,17 +1,20 @@
 const VC = require('../model/vc.model');
 
-const createVC = async (vcHash, issuer, subject, proof) => {
+const createVC = async (vcHash, issuer, subject, proof, type, iat, exp) => {
     const newVC = new VC({
         _id: vcHash,
         issuer,
         subject,
-        proof
+        proof,
+        type,
+        iat,
+        exp
     });
     return await newVC.save();
 }
 
-const revokeVC = async (vcHash, status) => {
-    return await VC.findByIdAndUpdate(vcHash, { status });
+const revokeVC = async (id, status) => {
+    return await VC.findByIdAndUpdate(id, { $set: { status } }, { new: true });
 }
 
 const getVCByIssuer = async (issuer) => {
@@ -21,6 +24,7 @@ const getVCByIssuer = async (issuer) => {
 const getVCBySubject = async (subject) => {
     return await VC.find({ subject });
 }
+
 
 module.exports = {
     createVC,
