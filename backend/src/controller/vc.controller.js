@@ -60,11 +60,56 @@ const retrieveVC = async (req, res) => {
     }
 }
 
+const requestPresent = async (req, res) => {
+    const { id, holder, verifier } = req.body;
+    try {
+        const result = await VCService.requestPresent(id, holder, verifier);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const getRequestedVCByHolder = async (req, res) => {
+    const { holder } = req.params;
+    try {
+        const vc = await VCService.getRequestedVCByHolder(holder);
+        res.status(200).json(vc);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const getRequestedVCByVerifier = async (req, res) => {
+    const { verifier } = req.params;
+    try {
+        const vc = await VCService.getRequestedVCByVerifier(verifier);
+        res.status(200).json(vc);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const updateRequestedVC = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const vc = await VCService.updateRequestedVC(id, status);
+        res.status(200).json(vc);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
 module.exports = {
     issueVC,
     revokeVC,
     getVCByIssuer,
     getVCBySubject,
     grantRole,
-    retrieveVC
+    retrieveVC,
+    requestPresent,
+    getRequestedVCByHolder,
+    getRequestedVCByVerifier,
+    updateRequestedVC
 }

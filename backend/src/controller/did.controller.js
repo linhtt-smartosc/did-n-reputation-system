@@ -1,7 +1,8 @@
 const DIDService = require('../service/did.service');
 
 const createDID = async (req, res) => {
-    const { address, email, encryptedKey, role, signInType, name } = req.body;
+
+    const { address, email, encryptedKey, role, signInType } = req.body;
     try {
         const did = await DIDService.createDID(address, email, encryptedKey, role, signInType);
         res.status(201).json(did);

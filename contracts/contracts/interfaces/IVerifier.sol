@@ -20,14 +20,17 @@ interface IVerifier {
 
     /**
      * Check if a credential is valid
-     * @param vc Verifiable credential data structure
-     * @param _signature Signature in bytes
+     * @param _vc Verifiable credential data structure
+     * @param _issuerSignature The issuer signature in bytes
+     * @param _holderSignature The holder signature in bytes
      * @return bool True if the param credential issuer is equal to the signer of the credential
+     * @return bool True if the param credential holder is equal to the signer of the credential
      */
     function verifyCredential(
-        VerifiableCredential memory vc,
-        bytes memory _signature
-    ) external returns (bool);
+        VerifiableCredential memory _vc,
+        bytes memory _issuerSignature,
+        bytes memory _holderSignature
+    ) external view returns (bool, bool);
 
     /**
      * Verify if a credential exists

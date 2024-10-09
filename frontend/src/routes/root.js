@@ -3,6 +3,7 @@ import Dashboard from '../pages/Dashboard';
 import NotFound from '../pages/NotFound';
 import IssueCredential from '../pages/IssueCredential';
 import { createBrowserRouter } from 'react-router-dom';
+import Verify from '../pages/Verify';
 
 const routes = createBrowserRouter([
     {
@@ -14,8 +15,12 @@ const routes = createBrowserRouter([
         element: <Dashboard />,
     },
     {
-        path: '/issue-credential',
+        path: '/issue',
         element: <IssueCredential />,
+    },
+    {
+        path: '/verify',
+        element: <Verify />,
     },
     {
         path: '*',

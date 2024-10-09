@@ -3,7 +3,7 @@ const { signer } = require('../config/contract-instances.config');
 const { reputationContract, vcRegistryContract } = require('../config/contract-instances.config');
 const DIDDao = require('../dao/did.dao');
 
-const createDID = async (address, email, encryptedKey, role, signInType, name) => {
+const createDID = async (address, email, encryptedKey, role, signInType) => {
     const chainId = Number((await signer.provider.getNetwork()).chainId);
     const did = `did:didify:${chainId}:${address}`;
     let tx;
@@ -15,10 +15,8 @@ const createDID = async (address, email, encryptedKey, role, signInType, name) =
     }
     const reputationPoint = Number(await reputationContract.getReputationByOwner(address));
     if (role === 'issuer') {
-        console.log('Granting issuer role to', address);
-        await vcRegistryContract.grantRole(await vcRegistryContract.ISSUER_ROLE(), address);
-        console.log('Issuer role granted to', address);
-
+        const nonce = await signer.getNonce();
+        await vcRegistryContract.grantRole(await vcRegistryContract.ISSUER_ROLE(), address, { nonce });
     }
     const newUser = await DIDDao.createUser(address, email, role, encryptedKey, reputationPoint);
     const newDID = await DIDDao.createDID(address, chainId);
@@ -50,6 +48,8 @@ const updateAttribute = async (sig, attribute, validity) => {
 const getUser = async (address) => {
     return await DIDDao.getUser(address);
 }
+
+
 
 module.exports = {
     createDID,

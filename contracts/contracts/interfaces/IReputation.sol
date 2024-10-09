@@ -36,7 +36,7 @@ interface IReputation {
      * Get the total reputation point by owner
      * @param _owner address of the owner
      */
-    function getReputationByOwner(address _owner) external view returns (uint);
+    function getReputationByOwner(address _owner) external returns (uint);
 
     /**
      * Add social reputation point to the owner

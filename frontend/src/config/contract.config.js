@@ -15,13 +15,11 @@ let provider, signer, didRegistryContract, reputationContract, vcRegistryContrac
 export const initContracts = async () => {
     provider = new ethers.BrowserProvider(window.ethereum);
     signer = await provider.getSigner();
-
-
+    
     didRegistryContract = new Contract(DIDRegistryAddress, DIDRegistry.abi, signer);
     reputationContract = new Contract(ReputationAddress, Reputation.abi, signer);
     vcRegistryContract = new Contract(CredentialRegistryAddress, CredentialRegistry.abi, signer);
     verifierRegistryContract = new Contract(VerifierAddress, Verifier.abi, signer);
-    console.log(verifierRegistryContract);
     
 }
 

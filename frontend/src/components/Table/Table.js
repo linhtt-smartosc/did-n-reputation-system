@@ -4,9 +4,17 @@ import shortenAccount from '../../utils/shortenAccount.util';
 import { vcRegistryContract, verifierRegistryContract } from '../../config/contract.config';
 import { keccak256, toUtf8Bytes } from 'ethers';
 import useAlert from '../../hooks/useAlert';
-import { retrieveVC, revokeVC } from '../../apis/credentials/credential.api';
+import { retrieveVC, revokeVC, createPresentation, updateRequestedVC } from '../../apis/credentials/credential.api';
+import { BiDetail } from "react-icons/bi";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { MdOutlineCoPresent } from "react-icons/md";
+import { GoVerified } from "react-icons/go";
+import { FiSend } from "react-icons/fi";
+import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import constructMsgAndSign from '../../utils/eip-712.util';
 
-const Table = ({ data, totalItems }) => {
+const Table = ({ data, totalItems, type }) => {
     const {
         currentPage,
         pageSize,
@@ -17,19 +25,21 @@ const Table = ({ data, totalItems }) => {
     } = usePagination(data, totalItems);
 
     const { setAlert } = useAlert();
-    const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const [loading, setLoading] = useState(false);
-    const dialogRef = useRef(null);
+    const detailModal = useRef(null);
     const [vc, setVC] = useState({});
     const [vcId, setVCId] = useState('');
+    const [showPresentModal, setShowPresentModal] = useState(false);
+    const presentModal = useRef(null);
+    const { register, handleSubmit } = useForm();
+    const user = useSelector(state => state.user);
 
     const handleRevoke = async (id, issuer) => {
         const hash = keccak256(toUtf8Bytes(id));
         const revokeTx = await vcRegistryContract.revokeCredentialEOA(hash, issuer);
         const receipt = await revokeTx.wait();
-        console.log("Receipt", receipt.logs[0].args);
-        const status = await revokeVC(id);
-        console.log("Status", status);
+        await revokeVC(id);
 
         if (receipt.logs[0].args[0] === hash) {
             setAlert("Credential revoked successfully!", "success");
@@ -37,16 +47,15 @@ const Table = ({ data, totalItems }) => {
     }
 
     const handleDetail = async (id) => {
-        console.log("Detail", id);
         setVCId(id);
-        setShowModal(true);
+        setShowDetailModal(true);
         setLoading(true);
         try {
             const res = await retrieveVC(id);
-            console.log("Res", res.data);
             setVC(res.data);
-            if (dialogRef.current) {
-                dialogRef.current.showModal();
+
+            if (detailModal.current) {
+                detailModal.current.showModal();
             }
         } catch (error) {
             console.error("Error retrieving VC:", error);
@@ -56,34 +65,80 @@ const Table = ({ data, totalItems }) => {
     }
 
     const closeModal = () => {
-        setShowModal(false);
-        if (dialogRef.current) {
-            dialogRef.current.close();
+        if (showDetailModal) {
+            setShowDetailModal(false);
+            if (detailModal.current) {
+                detailModal.current.close();
+            }
+        } else {
+            setShowPresentModal(false);
+            if (presentModal.current) {
+                presentModal.current.close();
+            }
+        }
+
+
+    }
+
+
+    const handleVerify = async (vcInput) => {
+        const res = await retrieveVC(vcInput._id);
+        const vc = res.data;
+        const issuer = vc.issuer.replace('did:didify:', '');
+        const holder = vc.holder.replace('did:didify:', '');
+        const credentialSubject = vc.credentialSubject.credentialSubject;
+
+        const credentialSubjectHex = keccak256(toUtf8Bytes(JSON.stringify(vc.credentialSubject.credentialSubject)));
+
+        const iat = new Date(vc.issuanceDate);
+        const exp = new Date(vc.expirationDate);
+
+        const validTo = Math.floor(exp.getTime() / 1000);
+        const validFrom = Math.floor(iat.getTime() / 100);
+        const issuerSig = vc.proof.proof;
+
+        
+        const sampleData = {
+            issuer: vc.issuer,
+            holder: vc.holder,
+            issuanceDate: iat,
+            expirationDate: exp,
+            credentialSubject,
+        }
+        let holderSig;
+        try {
+            holderSig = await constructMsgAndSign(sampleData);
+        } catch (error) {
+            console.log("Error", error);
+        }
+
+        const isIssuer = await verifierRegistryContract.verifyCredential([issuer, holder, credentialSubjectHex, validFrom, validTo], issuerSig, holderSig);
+        const isExist = await verifierRegistryContract.exist(keccak256(toUtf8Bytes(vcInput._id)), issuer);
+        const isValid = await verifierRegistryContract.validate(keccak256(toUtf8Bytes(vcInput._id)), issuer);
+
+        if (isIssuer[0] === true && isIssuer[1] && isExist === true && isValid === true) {
+            setAlert("Credential verified successfully!", "success");
+            await updateRequestedVC(vcInput._id, 'valid');
+        } else {
+            setAlert("Credential verification failed!", "error");
+            await updateRequestedVC(vcInput._id, 'invalid');
         }
     }
 
-    const handleVerify = async () => {
-        const issuer = vc.issuer.replace('did:didify:', '');
-        const holder = vc.holder.replace('did:didify:', '');
+    const handleRequest = async (id) => {
+        setVCId(id);
+        try {
+            await updateRequestedVC(id, 'requested');
+        } catch (error) {
+            console.error("Error requesting VC:", error);
+        }
+    }
 
-        const credentialSubjectHex = keccak256(toUtf8Bytes(JSON.stringify(vc.credentialSubject.credentialSubject)));
-        const iat = new Date(vc.issuanceDate);
-        const exp = new Date(vc.expirationDate);
-        
-        const validTo = Math.floor(exp.getTime() / 1000);
-        const validFrom = Math.floor(iat.getTime() / 1000);
-        const sig = vc.proof.proof;
-        const isIssuer = await verifierRegistryContract.verifyCredential([issuer, holder, credentialSubjectHex, validFrom, validTo], sig);
-        const isExist = await verifierRegistryContract.exist(keccak256(toUtf8Bytes(vcId)), issuer);
-        const isValid = await verifierRegistryContract.validate(keccak256(toUtf8Bytes(vcId)), issuer);
-
-        console.log("Verify", isIssuer);
-        if (isIssuer === true && isExist === true && isValid === true) {
-            closeModal();
-            setAlert("Credential verified successfully!", "success");
-        } else {
-            closeModal();
-            setAlert("Credential verification failed!", "error");
+    const handlePresentation = async (id) => {
+        setVCId(id);
+        setShowPresentModal(true);
+        if (presentModal.current) {
+            presentModal.current.showModal();
         }
     }
 
@@ -105,52 +160,117 @@ const Table = ({ data, totalItems }) => {
         });
     };
 
+    const handleSendPresentation = async (data) => {
+        const { verifier } = data;
+
+        try {
+            await createPresentation(user.account, verifier, vcId);
+            closeModal();
+            setAlert("Presentation sent successfully!", "success");
+        } catch (error) {
+            console.error("Error sending presentation:", error);
+        }
+    
+    }
+
     return (
         <>
             <div className="m-8">
                 <table className="table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Subject</th>
-                            <th>Issuer</th>
-                            <th>Type</th>
-                            <th>Created Date</th>
-                            <th>Expiry Date</th>
-                            <th>Status</th>
-                            <th>Details</th>
-                            <th>Revoke</th>
+                            {
+                                (type === 'request' || type === 'verify') ? (
+                                    <>
+                                        <th>ID</th>
+                                        <th>Holder</th>
+                                        <th>Issuer</th>
+                                        <th>Status</th>
+                                    </>
+                                ) : (
+                                    <>
+                                        <th>ID</th>
+                                        <th>Subject</th>
+                                        <th>Issuer</th>
+                                        <th>Type</th>
+                                        <th>Issuance Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>Status</th>
+                                        <th>Detail</th>
+                                    </>
+                                )
+                            }
+                            {type === 'request' ? (
+                                <th>Verify</th>
+                            ) : type === 'verify' ? (
+                                <th>Request</th>
+                            ) : (
+                                <>
+                                    <th>Present</th>
+                                    <th>Revoke</th>
+                                </>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
                         {
                             currentTableData.map((item, index) => (
                                 <tr key={index}>
-                                    <td>{shortenAccount(item._id)}</td>
-                                    <td>{shortenAccount(item.subject)}</td>
-                                    <td>{shortenAccount(item.issuer)}</td>
-                                    <td>{item.type}</td>
-                                    <td>{item.iat}</td>
-                                    <td>{item.exp}</td>
-                                    <td>{item.status ? 'Active' : 'Inactive'}</td>
-                                    <td>
-                                        <button className="btn" onClick={() => handleDetail(item._id)}>
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-                                                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                                                <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
-                                                <g id="SVGRepo_iconCarrier">
-                                                    <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-                                                </g>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button className="btn" onClick={() => handleRevoke(item._id, item.issuer)}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="16" height="16" viewBox="0 0 24 24">
-                                                <path d="M 4.9902344 3.9902344 A 1.0001 1.0001 0 0 0 4.2929688 5.7070312 L 10.585938 12 L 4.2929688 18.292969 A 1.0001 1.0001 0 1 0 5.7070312 19.707031 L 12 13.414062 L 18.292969 19.707031 A 1.0001 1.0001 0 1 0 19.707031 18.292969 L 13.414062 12 L 19.707031 5.7070312 A 1.0001 1.0001 0 0 0 18.980469 3.9902344 A 1.0001 1.0001 0 0 0 18.292969 4.2929688 L 12 10.585938 L 5.7070312 4.2929688 A 1.0001 1.0001 0 0 0 4.9902344 3.9902344 z"></path>
-                                            </svg>
-                                        </button>
-                                    </td>
+
+                                    {
+                                        (type === 'request' || type === 'verify') ? (
+                                            <>
+                                                <td>{shortenAccount(item._id._id)}</td>
+                                                <td>{shortenAccount(item.holder)}</td>
+                                                <td>{shortenAccount(item._id.issuer)}</td>
+                                                <td>{item.status}</td>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <td>{shortenAccount(item._id)}</td>
+                                                <td>{shortenAccount(item.subject)}</td>
+                                                <td>{shortenAccount(item.issuer)}</td>
+                                                <td>{item.type}</td>
+                                                <td>{item.iat}</td>
+                                                <td>{item.exp}</td>
+                                                <td>{item.status ? 'Active' : 'Inactive'}</td>
+                                                <td>
+                                                    <button className="btn" onClick={() => handleDetail(item._id)}>
+                                                        <BiDetail />
+                                                    </button>
+                                                </td>
+                                            </>
+                                        )
+                                    }
+                                    {
+                                        type === 'request' ? (
+                                            <td>
+                                                <button className="btn" disabled={item.status !== 'requested'} onClick={() => handleVerify(item._id)}>
+                                                    <GoVerified />
+                                                </button>
+                                            </td>
+                                        ) : type === 'verify' ? (
+                                            <td>
+                                                    <button className="btn" disabled={item.status !== 'presented'} onClick={() => handleRequest(item._id._id)}>
+                                                    <FiSend />
+                                                </button>
+                                            </td>
+                                        ) : (
+                                            <>
+                                                <td>
+                                                    <button className="btn" onClick={() => handlePresentation(item._id)}>
+                                                        <MdOutlineCoPresent />
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <button className="btn" onClick={() => handleRevoke(item._id, item.issuer)}>
+                                                        <FaRegTrashCan />
+                                                    </button>
+                                                </td>
+                                            </>
+
+                                        )
+                                    }
                                 </tr>
                             ))
                         }
@@ -172,11 +292,11 @@ const Table = ({ data, totalItems }) => {
                 </div>
             </div>
             {
-                showModal && (
-                    <dialog ref={dialogRef} className="modal">
+                showDetailModal && (
+                    <dialog ref={detailModal} className="modal">
                         <div className="modal-box">
                             <form method="dialog">
-                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={closeModal}>✕</button>
+                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => closeModal()}>✕</button>
                             </form>
                             <h3 className="text-lg font-bold">Credential Details</h3>
                             {loading ? (
@@ -205,6 +325,32 @@ const Table = ({ data, totalItems }) => {
                             <div className="flex justify-end">
                                 <button className="btn btn-primary" onClick={() => handleVerify(vcId)}>Verify</button>
                             </div>
+                        </div>
+                    </dialog>
+                )
+            }
+            {
+                showPresentModal && (
+                    <dialog ref={presentModal} className="modal">
+                        <div className="modal-box">
+                            <form method="dialog" >
+                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => closeModal()}>✕</button>
+                            </form >
+                            <form onSubmit={handleSubmit(handleSendPresentation)}>
+                                <h1 className="text-lg font-bold">Send a Presentation</h1>
+                                <div class="label">
+                                    <span class="label-text font-bold">Credential ID</span>
+                                </div>
+                                <input type="text" placeholder={vcId} className="input input-bordered w-full max-w-xs" disabled/>
+
+                                <div class="label">
+                                    <span class="label-text font-bold">Verifier</span>
+                                </div>
+                                <input type="text" placeholder="Verifier ID" class="input input-bordered w-full max-w-xs" {...register('verifier', { require: true })} />
+                                <div className="flex justify-end">
+                                    <button type='submit' className="btn btn-primary">Send</button>
+                                </div>
+                            </form>
                         </div>
                     </dialog>
                 )

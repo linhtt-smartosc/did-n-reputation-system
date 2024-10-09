@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import shortenAccount from '../../utils/shortenAccount.util';
 import { setUser } from '../../redux/slices/users.slice';
 import Logo from '../../assets/Logo';
-import connectWallet from '../../utils/connectWallet.util';
 
 const NavBar = () => {
     const user = useSelector((state) => state.user);
@@ -11,11 +10,10 @@ const NavBar = () => {
 
     useEffect(() => {
         if (!user.account) {
-            connectWallet(dispatch);
+            dispatch({type: 'CONNECT_WALLET'});
         } else {
             window.ethereum.on('accountsChanged', function (accounts) {
-                dispatch(setUser({ account: accounts[0] }));
-                localStorage.setItem('user', JSON.stringify({ account: accounts[0] }));
+                dispatch(setUser({ account: accounts[0], role: user.role }));
             });
         }
     });
@@ -47,7 +45,8 @@ const NavBar = () => {
                             <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay -z-10"></label>
                             <ul className="menu bg-base-100 text-base-content min-h-full w-80 p-4">
                                 <li><a href='/dashboard'>Dashboard</a></li>
-                                <li><a href='/issue-credential'>Issue</a></li>
+                                <li><a href='/issue'>Issue</a></li>
+                                <li><a href='/verify'>Verify</a></li>
                             </ul>
                         </div>
                     </div>
@@ -60,7 +59,8 @@ const NavBar = () => {
 
             {user.account ? <div className="hidden md:flex flex-0 ">
                 <a href='/dashboard' className="btn btn-ghost">Dashboard</a>
-                <a href='/issue-credential' className="btn btn-ghost">Issue</a>
+                <a href='/issue' className="btn btn-ghost">Issue</a>
+                <a href='/verify' className="btn btn-ghost">Verify</a>
             </div> : <></>}
 
 

@@ -223,7 +223,6 @@ describe("Verifiable Credential", function () {
             const credentialHash = await getCredentialHash(vc, holder.address, await verifierInstance.getAddress());
             const credentialMessage = await getEthSignedMessageHash(credentialHash, await verifierInstance.getAddress());
             const verifyTx = await verifierInstance.exist(credentialMessage, issuer.address);
-            console.log(verifyTx);
             expect(verifyTx).to.be.false;
         })
         it("Should return second false if the credential is revoked or expired", async function () {

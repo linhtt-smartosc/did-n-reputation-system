@@ -7,7 +7,7 @@ const Stat = ({ account, totalCredential, reputation }) => {
             <div class="stats stats-vertical mt-5 md:stats-horizontal shadow">
                 <div class="stat">
                     <div class="stat-title">DID</div>
-                    <div class="stat-value">`did:didify:{shortenAccount(account)}`</div>
+                    <div class="stat-value">did:didify:{shortenAccount(account)}</div>
                 </div>
 
                 <div class="stat">

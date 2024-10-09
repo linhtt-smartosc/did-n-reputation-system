@@ -7,7 +7,7 @@ import constructMsgAndSign from "../utils/eip-712.util";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/slices/users.slice";
 import connectWallet from "../utils/connectWallet.util";
-import { vcRegistryContract } from "../config/contract.config";
+import { provider, vcRegistryContract } from "../config/contract.config";
 import { Interface, keccak256, toUtf8Bytes } from "ethers";
 import vcRegistry from "../artifacts/CredentialRegistry.json"
 
@@ -127,14 +127,15 @@ const IssueCredential = () => {
             
             const result = await issueVC(data);
             const credentialHash = keccak256(toUtf8Bytes(result._id));
-            console.log("Credential Hash:", credentialHash);
+
+            const signer = await provider.getSigner();
+            const nonce = await signer.getNonce();
             
-            const registerVCTx = await vcRegistryContract.registerCredentialEOA(user.account, holder, credentialHash, validFrom, validTo);
-            const receipt = await registerVCTx.wait();
-            const getVCTx = await vcRegistryContract.getCredential(credentialHash, user.account);
-            console.log("Get VCtx:", getVCTx);
-            console.log(receipt.logs[0].args);
-            
+            const registerVCTx = await vcRegistryContract.registerCredentialEOA(user.account, holder, credentialHash, validFrom, validTo, { nonce });
+
+            await registerVCTx.wait();
+            await vcRegistryContract.getCredential(credentialHash, user.account);
+
             if (result) {
                 setAlert('Credential issued successfully!', 'success');
             }
@@ -150,8 +151,6 @@ const IssueCredential = () => {
 
     const grantRoleForUser = async () => {
         try {
-            console.log("Grant role to user");
-
             const data = await grantRole(user.account);
             if (data) {
                 setAlert('Role ISSUER granted successfully', 'success');

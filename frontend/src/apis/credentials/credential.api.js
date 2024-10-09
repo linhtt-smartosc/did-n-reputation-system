@@ -24,4 +24,20 @@ export async function retrieveVC(id) {
     return await get(`/vc/${id}`);
 }
 
+export async function createPresentation(holder, verifier, id) {
+    return await post(`/vc/requestVC`, { holder, verifier, id });
+}
+
+export async function getRequestedVCByHolder(holder) {
+    return await get(`/vc/requestVC/holder/${holder}`);
+}
+
+export async function getRequestedVCByVerifier(verifier) {
+    return await get(`/vc/requestVC/verifier/${verifier}`);
+}
+
+export async function updateRequestedVC(id, status) {
+    return await patch(`/vc/requestVC/${id}`, {status});
+}
+
 

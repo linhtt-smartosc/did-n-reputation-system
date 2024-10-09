@@ -2,6 +2,7 @@ import { writeDeployData } from "../utils/addressManager";
 import { ethers } from "hardhat";
 import CredentialRegistryArtifact from "../artifacts/contracts/CredentialRegistry.sol/CredentialRegistry.json";
 import VerifierContractArtifact from "../artifacts/contracts/Verifier.sol/Verifier.json";
+import deployedData from "./deployments/hardhat/address.json";
 
 const privateKey = process.env.LOCAL_PRIVATE_KEY;
 
@@ -30,7 +31,8 @@ async function credentialRegistryDeploy() {
     "Didify",
     "1",
     31337,
-    credentialRegistryAddress
+    credentialRegistryAddress,
+    deployedData.DIDRegistry
   );
   await verifierContract.waitForDeployment();
   console.log(

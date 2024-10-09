@@ -4,6 +4,7 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/IVerifier.sol";
 import "./interfaces/ICredentialRegistry.sol";
+import "./interfaces/IDIDRegistry.sol";
 
 contract Verifier is AccessControl, IVerifier {
     struct EIP712Domain {
@@ -14,15 +15,15 @@ contract Verifier is AccessControl, IVerifier {
     }
 
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
+    bytes32 DOMAIN_SEPARATOR;
 
-    ICredentialRegistry public credentialRegistry;
+    ICredentialRegistry private credentialRegistry;
+    IDIDRegistry private didRegistry;
 
     bytes32 constant EIP712DOMAIN_TYPEHASH =
         keccak256(
             abi.encodePacked("EIP712Domain(string name,string version,uint chainId,address verifyingContract)")
         );
-
-    bytes32 DOMAIN_SEPARATOR;
 
     bytes32 internal constant VERIFIABLE_CREDENTIAL_TYPEHASH =
         keccak256(
@@ -33,7 +34,8 @@ contract Verifier is AccessControl, IVerifier {
         string memory name,
         string memory version,
         uint256 chainId,
-        address credentialRegistryAddress
+        address credentialRegistryAddress,
+        address didRegistryAddress
     ) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         DOMAIN_SEPARATOR = hashEIP712Domain(
@@ -44,7 +46,7 @@ contract Verifier is AccessControl, IVerifier {
                 verifyingContract: address(this)
             })
         );
-
+        didRegistry = IDIDRegistry(didRegistryAddress);
         credentialRegistry = ICredentialRegistry(credentialRegistryAddress);
     }
 
@@ -65,8 +67,9 @@ contract Verifier is AccessControl, IVerifier {
 
     function verifyCredential(
         VerifiableCredential memory _vc,
-        bytes memory _signature
-    ) external view override returns (bool) {
+        bytes memory _issuerSignature,
+        bytes memory _holderSignature
+    ) external view returns (bool, bool) {
         bytes32 hash = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -81,13 +84,33 @@ contract Verifier is AccessControl, IVerifier {
                 )
             )
         );
+        address identityOwner = didRegistry.identityOwner(_vc.subject);
     
-        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
-        address signer = credentialRegistry.getIssuer(hash, v, r, s);
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_issuerSignature);
+        (bytes32 hr, bytes32 hs, uint8 hv) = splitSignature(_holderSignature);
+        address issuer = getSigner(hash, v, r, s);
+        address holder = getSigner(hash, hv, hr, hs);
 
         return (
-            credentialRegistry.verifyIssuer(_vc.issuer, signer)
+            verifySigner(_vc.issuer, issuer),
+            verifySigner(identityOwner, holder)
         );
+    }
+
+    function verifySigner(
+        address expectedSigner,
+        address signer
+    ) internal pure returns (bool) {
+        return (expectedSigner == signer);
+    }
+
+    function getSigner(
+        bytes32 digest,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal pure returns (address) {
+        return ecrecover(digest, v, r, s);
     }
 
     function exist(

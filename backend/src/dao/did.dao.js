@@ -11,9 +11,6 @@ async function createDID(address, chainId) {
 }
 
 async function createUser(address, email, role, encryptedKey, reputation) {
-    if(!email && !encryptedKey) {
-        throw new Error("Email or encrypted key are required");
-    }
     let newUser;
     if (role === 'issuer') {
         newUser = new User({
@@ -42,6 +39,10 @@ async function updateReputation(address, reputation) {
     return await User.findByIdAndUpdate(address, { reputation });
 }
 
+async function updateRole(address, role) {
+    return await User.findByIdAndUpdate(address, { role });
+}
+
 async function getUser(address) {
     return await User.findById(address);
 }
@@ -51,5 +52,6 @@ module.exports = {
     getUser,
     createUser,
     updateOwner,
-    updateReputation
+    updateReputation,
+    updateRole
 }

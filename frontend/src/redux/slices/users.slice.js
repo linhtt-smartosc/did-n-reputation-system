@@ -5,13 +5,14 @@ const userSlice = createSlice({
     initialState: {
         isLoggedIn: false,
         account: null,
+        role: '',
         error: null
     },
     reducers: {
         setUser: (state, action) => {
             state.account = action.payload.account;
+            state.role = action.payload.role;
             state.isLoggedIn = true;
-            localStorage.setItem('user', JSON.stringify({ account: action.payload.account }));
         },
         unsetUser: (state) => {
             state.account = null;

@@ -25,9 +25,6 @@ const userSchema = new Schema({
         type: String,
         ref: 'did'
     },
-    smartAccount: {
-        type: String,
-    },
     name: {
         type: String,
     }

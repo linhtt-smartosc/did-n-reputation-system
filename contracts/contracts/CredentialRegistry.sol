@@ -214,21 +214,7 @@ contract CredentialRegistry is ICredentialRegistry, AccessControl {
             );
     }
 
-    function verifyIssuer(
-        address issuer,
-        address signer
-    ) external pure returns (bool) {
-        return (issuer == signer);
-    }
-
-    function getIssuer(
-        bytes32 digest,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external pure returns (address issuer) {
-        return ecrecover(digest, v, r, s);
-    }
+    
 
     function checkSignature(
         Signature memory _signaturePart,

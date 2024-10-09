@@ -10,7 +10,7 @@ contract Reputation is IReputation {
         reputation[_owner].totalReputationPoint = _reputation;
     }
 
-    function getReputationByOwner(address _owner) public view returns (uint) {
+    function getReputationByOwner(address _owner) public returns (uint) {
         return reputation[_owner].totalReputationPoint;
     }
 

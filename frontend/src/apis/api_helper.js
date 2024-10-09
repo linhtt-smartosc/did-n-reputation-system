@@ -19,7 +19,6 @@ axiosApi.interceptors.response.use(
 export default axiosApi;
 
 export async function get(url, params = {}, config = {}) {
-    console.log("axios", url);
     return await axiosApi.get(url, { params, ...config }).then(response => response.data)
 }
 
@@ -28,7 +27,6 @@ export async function post(
     data,
     config = {}
 ) {
-    console.log("axios", data)
     return axiosApi.post(url, data, { ...config }).then(response => response.data)
 }
 

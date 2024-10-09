@@ -2,19 +2,29 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import { setUser, unsetUser } from '../slices/users.slice';
 import { initContracts } from '../../config/contract.config';
+import { getUser, createUser } from '../../apis/did/did.api';
+
 
 function* connectWalletSaga() {
     if (typeof window !== "undefined" && typeof window.ethereum !== "undefined") {
         try {
             /* MetaMask is installed */
-            const accounts = yield call([window.ethereum, 'request'], { method: "eth_requestAccounts" });
-            yield put(setUser({ account: accounts[0] }));
+            const accounts = yield call([window.ethereum, 'request'], { method: "eth_requestAccounts" }); 
+            const address = accounts[0];
+            let user = yield call(getUser, address);
+            
+            if (!user) {
+                user = yield call(createUser, address, '', 'user', '', 4);
+            }
             yield call(initContracts);
+            yield put(setUser({ account: accounts[0], role: user.role }));
+            
 
-            window.ethereum.on('accountsChanged', function (accounts) {
-                put(setUser({ account: accounts[0] }));
-                localStorage.setItem('user', JSON.stringify({ account: accounts[0] }));
-                console.log(accounts[0]);
+            window.ethereum.on('accountsChanged', async function (accounts) {
+                if (!user) {
+                    user = await createUser(accounts[0], '', 'user', '', 4);
+                }
+                put(setUser({ account: accounts[0], role: user.role }));
             });
         } catch (err) {
             console.error(err.message);

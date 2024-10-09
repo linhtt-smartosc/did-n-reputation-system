@@ -38,7 +38,8 @@ const constructMsgAndSign = async (vc) => {
     const validFrom = Math.floor(issuanceDate.getTime() / 1000);
     const validTo = Math.floor(expirationDate.getTime() / 1000);
 
-    const holder = vc.holder.replace('did:didify:', '')
+    const holder = vc.holder.replace('did:didify:', '');
+    const issuer = vc.issuer.replace('did:didify:', '');
     const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
     });
@@ -52,7 +53,7 @@ const constructMsgAndSign = async (vc) => {
         domain,
         primaryType: "VerifiableCredential",
         message: {
-            issuer: accounts[0],
+            issuer,
             subject: holder,
             credentialSubject: credentialSubjectHex,
             validFrom,
@@ -65,15 +66,6 @@ const constructMsgAndSign = async (vc) => {
         method: "eth_signTypedData_v4",
         params: [from, msgParams],
     });
-
-    // try {
-    //     const verify = await verifierRegistryContract.verifyCredential(
-    //         [accounts[0], holder, credentialSubjectHex, validFrom, validTo],
-    //         signature
-    //     );
-    // } catch (error) {
-    //     console.error('Error verifying credential:', error);
-    // }
 
     return signature;
 }
