@@ -1,1 +1,8 @@
 # Decentralized Identity and Reputation System
+A simple decentralized identity and reputation system based on Ethereum. To run the project, check the README in each directory from contracts, backend and frontend respectively. 
+## Features
++ **DID registration**: Each user needs to possess a key pair. Currently, the system requires a wallet provided by Metamask. The public key is the user's DID. The user can change the owner of DID (change to another address) by sending a transaction with his signature to the DIDRegister contract.
++ **VC issuance**: An entity will register himself to be an issuer. Currently, the system allows anyone can be an issuer. An issuer is a trusted entity that can issue a DID a verifiable credential (VC). This verifiable credential has the structure based on the specification of verifiable credential from W3C. To issue a credential, the issuer signs the VC with his private key. This makes the credential *verifiable*.
++ **VC verification**: anyone can verify a VC. To verify a VC, the verifier will need to make a verification request and send it to the holder of the VC. Current implementation needs the verifier to specify the address/DID of the holder. The holder will then send a transaction to the VC verifier contract with his signature. If the transaction data satisfies: the VC is valid at the time of verification, the VC is from the correct issuer and the signature of the holder is correct, the verifier will returns valid for the VC. Otherwise, it will return invalid.
++ **Reputation registration**: Each user has a reputation point which is the aggregation of multiple criteria (possessing an email, a VC or transaction history).
+  
